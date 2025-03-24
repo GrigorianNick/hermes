@@ -1,4 +1,4 @@
-use std::path::Path;
+use std::{cmp::max, path::Path};
 
 use clap::Parser;
 use image::{imageops::crop, ImageError, ImageReader};
@@ -6,12 +6,12 @@ use image::{imageops::crop, ImageError, ImageReader};
 #[derive(Parser, Debug)]
 struct Args {
     /// Sets crop point's X value
-    #[arg(short, long, default_value_t = 0)]
-    x: u32,
+    #[arg(short, long, default_value_t = 0, allow_negative_numbers = true)]
+    x: i32,
 
     /// Sets crop point's Y value
-    #[arg(short, long, default_value_t = 0)]
-    y: u32,
+    #[arg(short, long, default_value_t = 0, allow_negative_numbers = true)]
+    y: i32,
 
     /// Crop width, from the crop point
     #[arg(long)]
@@ -51,7 +51,7 @@ fn main() -> Result<(),ImageError>{
     let mut img = ImageReader::open(args.src)?.decode()?;
     let w= args.width.unwrap_or(img.width());
     let h = args.height.unwrap_or(img.height());
-    let subimg = crop(&mut img, args.x, args.y, w, h);
+    let subimg = crop(&mut img, max(0_i32, args.x) as u32, max(0_i32, args.y) as u32, w, h);
     subimg.to_image().save(args.dst)?;
     Ok(())
 }
